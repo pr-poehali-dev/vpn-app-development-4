@@ -78,7 +78,6 @@ export default function ProfileTab() {
       {/* Actions */}
       <div className="vpn-card overflow-hidden">
         {[
-          { label: 'Сменить пароль', icon: 'Lock' },
           { label: 'Управление устройствами', icon: 'Smartphone' },
           { label: 'История платежей', icon: 'Receipt' },
           { label: 'Выйти', icon: 'LogOut', danger: true },

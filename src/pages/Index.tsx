@@ -12,7 +12,9 @@ type IconName = string;
 interface User {
   id: number;
   first_name: string;
+  last_name?: string;
   username: string;
+  telegram_id?: number;
 }
 
 const AUTH_URL = 'https://functions.poehali.dev/c8c6f107-6f3d-486b-883a-d2e614d0c6eb';

@@ -5,7 +5,9 @@ type IconName = string;
 interface User {
   id: number;
   first_name: string;
+  last_name?: string;
   username: string;
+  telegram_id?: number;
 }
 
 interface ProfileTabProps {
@@ -14,7 +16,8 @@ interface ProfileTabProps {
 }
 
 export default function ProfileTab({ user, onLogout }: ProfileTabProps) {
-  const displayName = user.first_name || (user.username ? `@${user.username}` : 'Пользователь');
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
+  const displayName = fullName || (user.username ? `@${user.username}` : 'Пользователь');
   const subLabel = user.username ? `@${user.username}` : `ID: #${user.id}`;
 
   return (

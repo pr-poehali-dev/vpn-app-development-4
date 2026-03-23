@@ -119,7 +119,7 @@ export default function Index() {
             <Icon name="Shield" size={14} style={{ color: 'var(--neon)' }} />
           </div>
           <span className="font-semibold text-sm tracking-widest uppercase" style={{ color: 'var(--text-bright)' }}>
-            SecureVPN
+            HunVPN
           </span>
         </div>
         <span

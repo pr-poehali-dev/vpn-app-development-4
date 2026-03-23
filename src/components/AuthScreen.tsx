@@ -76,7 +76,7 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
           </div>
           <div className="text-center">
             <div className="text-xl font-bold tracking-widest uppercase" style={{ color: 'var(--text-bright)' }}>
-              SecureVPN
+              HunVPN
             </div>
             <div className="text-sm mt-1" style={{ color: 'var(--text-soft)' }}>
               Безопасное подключение

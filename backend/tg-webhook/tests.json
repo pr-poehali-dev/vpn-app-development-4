@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Empty webhook update",
+      "method": "POST",
+      "path": "/",
+      "body": {"message": null},
+      "expectedStatus": 200
+    }
+  ]
+}

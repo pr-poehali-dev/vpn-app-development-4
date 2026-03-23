@@ -2,7 +2,21 @@ import Icon from '@/components/ui/icon';
 
 type IconName = string;
 
-export default function ProfileTab() {
+interface User {
+  id: number;
+  first_name: string;
+  username: string;
+}
+
+interface ProfileTabProps {
+  user: User;
+  onLogout: () => void;
+}
+
+export default function ProfileTab({ user, onLogout }: ProfileTabProps) {
+  const displayName = user.first_name || (user.username ? `@${user.username}` : 'Пользователь');
+  const subLabel = user.username ? `@${user.username}` : `ID: #${user.id}`;
+
   return (
     <div className="flex flex-col px-6 pt-8 pb-6 gap-4 max-w-sm mx-auto w-full animate-fade-up">
       {/* Avatar */}
@@ -14,8 +28,8 @@ export default function ProfileTab() {
           👤
         </div>
         <div>
-          <div className="font-semibold" style={{ color: 'var(--text-bright)' }}>user@example.com</div>
-          <div className="text-sm" style={{ color: 'var(--text-soft)' }}>ID: #48291</div>
+          <div className="font-semibold" style={{ color: 'var(--text-bright)' }}>{displayName}</div>
+          <div className="text-sm" style={{ color: 'var(--text-soft)' }}>{subLabel}</div>
         </div>
       </div>
 
@@ -78,12 +92,13 @@ export default function ProfileTab() {
       {/* Actions */}
       <div className="vpn-card overflow-hidden">
         {[
-          { label: 'Управление устройствами', icon: 'Smartphone' },
-          { label: 'История платежей', icon: 'Receipt' },
-          { label: 'Выйти', icon: 'LogOut', danger: true },
+          { label: 'Управление устройствами', icon: 'Smartphone', action: undefined },
+          { label: 'История платежей', icon: 'Receipt', action: undefined },
+          { label: 'Выйти', icon: 'LogOut', danger: true, action: onLogout },
         ].map((item, idx, arr) => (
           <button
             key={item.label}
+            onClick={item.action}
             className="w-full flex items-center justify-between px-4 py-3.5 transition-colors hover:bg-white/5"
             style={{ borderBottom: idx < arr.length - 1 ? '1px solid var(--navy-border)' : 'none' }}
           >

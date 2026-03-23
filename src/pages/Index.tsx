@@ -3,10 +3,19 @@ import Icon from '@/components/ui/icon';
 import ConnectTab from '@/components/ConnectTab';
 import ProfileTab from '@/components/ProfileTab';
 import SettingsTab from '@/components/SettingsTab';
+import AuthScreen from '@/components/AuthScreen';
 
 type Tab = 'connect' | 'profile' | 'settings';
 type ConnectionState = 'disconnected' | 'connecting' | 'connected';
 type IconName = string;
+
+interface User {
+  id: number;
+  first_name: string;
+  username: string;
+}
+
+const AUTH_URL = 'https://functions.poehali.dev/c8c6f107-6f3d-486b-883a-d2e614d0c6eb';
 
 const SERVERS = [
   { id: 1, name: 'Нидерланды — Амстердам', flag: '🇳🇱', ping: 22, load: 34 },
@@ -17,6 +26,9 @@ const SERVERS = [
 ];
 
 export default function Index() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
   const [tab, setTab] = useState<Tab>('connect');
   const [connState, setConnState] = useState<ConnectionState>('disconnected');
   const [selectedServer, setSelectedServer] = useState(SERVERS[0]);
@@ -26,6 +38,21 @@ export default function Index() {
   const [autoStart, setAutoStart] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [sessionTime, setSessionTime] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem('session_token');
+    if (!token) { setAuthChecked(true); return; }
+    fetch(`${AUTH_URL}?action=me`, { headers: { 'X-Session-Token': token } })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.id) setUser(data); else localStorage.removeItem('session_token'); })
+      .catch(() => {})
+      .finally(() => setAuthChecked(true));
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('session_token');
+    setUser(null);
+  };
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -58,6 +85,18 @@ export default function Index() {
     const sec = (s % 60).toString().padStart(2, '0');
     return `${h}:${m}:${sec}`;
   };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--navy-deep)' }}>
+        <Icon name="Loader" size={32} className="animate-spin" style={{ color: 'var(--neon)' }} />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen onAuth={(token, u) => setUser(u)} />;
+  }
 
   return (
     <div
@@ -105,7 +144,7 @@ export default function Index() {
           />
         )}
         {tab === 'profile' && (
-          <ProfileTab />
+          <ProfileTab user={user} onLogout={handleLogout} />
         )}
         {tab === 'settings' && (
           <SettingsTab

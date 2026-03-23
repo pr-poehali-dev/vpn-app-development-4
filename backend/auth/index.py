@@ -5,6 +5,7 @@
 import json
 import os
 import secrets
+import urllib.request
 from datetime import datetime, timedelta
 import psycopg2
 
@@ -123,6 +124,52 @@ def handler(event: dict, context) -> dict:
                 'username': username or '',
                 'telegram_id': telegram_id,
             })
+        }
+
+    # GET ?action=avatar — получить URL аватара пользователя из Telegram
+    if method == 'GET' and action == 'avatar':
+        token = event.get('headers', {}).get('X-Session-Token', '')
+        if not token:
+            return {'statusCode': 401, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Нет токена'})}
+
+        conn, cur = get_conn()
+        cur.execute("""
+            SELECT u.telegram_id FROM sessions s
+            JOIN users u ON u.id = s.user_id
+            WHERE s.token = %s AND s.expires_at > NOW()
+            LIMIT 1
+        """, (token,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+
+        if not row:
+            return {'statusCode': 401, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Сессия истекла'})}
+
+        telegram_id = row[0]
+        bot_token = os.environ['TELEGRAM_BOT_TOKEN']
+
+        # Получаем фото профиля
+        photos_url = f"https://api.telegram.org/bot{bot_token}/getUserProfilePhotos?user_id={telegram_id}&limit=1"
+        with urllib.request.urlopen(photos_url) as r:
+            photos_data = json.loads(r.read())
+
+        avatar_url = None
+        if photos_data.get('ok') and photos_data['result']['total_count'] > 0:
+            file_id = photos_data['result']['photos'][0][-1]['file_id']
+
+            file_url = f"https://api.telegram.org/bot{bot_token}/getFile?file_id={file_id}"
+            with urllib.request.urlopen(file_url) as r:
+                file_data = json.loads(r.read())
+
+            if file_data.get('ok'):
+                file_path = file_data['result']['file_path']
+                avatar_url = f"https://api.telegram.org/file/bot{bot_token}/{file_path}"
+
+        return {
+            'statusCode': 200,
+            'headers': CORS_HEADERS,
+            'body': json.dumps({'avatar_url': avatar_url})
         }
 
     return {'statusCode': 404, 'headers': CORS_HEADERS, 'body': json.dumps({'error': 'Not found'})}

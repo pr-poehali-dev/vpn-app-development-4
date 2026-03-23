@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
+
+const AUTH_URL = 'https://functions.poehali.dev/c8c6f107-6f3d-486b-883a-d2e614d0c6eb';
 
 type IconName = string;
 
@@ -20,15 +23,29 @@ export default function ProfileTab({ user, onLogout }: ProfileTabProps) {
   const displayName = fullName || (user.username ? `@${user.username}` : 'Пользователь');
   const subLabel = user.username ? `@${user.username}` : `ID: #${user.id}`;
 
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('session_token');
+    if (!token) return;
+    fetch(`${AUTH_URL}?action=avatar`, { headers: { 'X-Session-Token': token } })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.avatar_url) setAvatarUrl(data.avatar_url); })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="flex flex-col px-6 pt-8 pb-6 gap-4 max-w-sm mx-auto w-full animate-fade-up">
       {/* Avatar */}
       <div className="flex items-center gap-4 mb-2">
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
+          className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center text-2xl flex-shrink-0"
           style={{ background: 'var(--neon-dim)', border: '1px solid rgba(0,212,255,0.3)' }}
         >
-          👤
+          {avatarUrl
+            ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+            : '👤'
+          }
         </div>
         <div>
           <div className="font-semibold" style={{ color: 'var(--text-bright)' }}>{displayName}</div>
